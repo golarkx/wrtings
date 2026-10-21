@@ -105,7 +105,7 @@ The result is the worst possible outcome: the GPU burns tokens on work nobody wi
 
 ### The Three Pillars
 
-Everything in this guide is one of three moves:
+Everything in this article leads to;
 
 1. **Configure Kubernetes to understand hardware** — teach the scheduler what a GPU is, where it is, and what must not touch it (taints, tolerations, affinity, device plugins, MIG).
 2. **Separate state from lifecycle** — never let the pod's start/stop own the weights; make loading explicit, cacheable per node, and observable.

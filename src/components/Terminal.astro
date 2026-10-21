@@ -20,6 +20,7 @@ const { posts } = Astro.props;
       type="text"
       spellcheck="false"
       autocapitalize="off"
+      autofocus
       aria-label="type a command, e.g. ls"
       placeholder="help"
     />
@@ -168,6 +169,8 @@ const { posts } = Astro.props;
   });
 
   term.addEventListener('click', () => input.focus());
+
+  input.focus({ preventScroll: true });
 </script>
 
 <style>

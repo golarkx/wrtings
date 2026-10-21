@@ -1,6 +1,6 @@
 ---
-title: "Notes on writing in public"
-description: "Some practical rules that made writing consistently easier for me."
+title: "Grokking AI on K8"
+description: "."
 pubDate: 2026-10-14
 tags: ["writing", "process"]
 ---

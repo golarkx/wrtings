@@ -1,0 +1,218 @@
+---
+interface Post {
+  id: string;
+  date: string;
+}
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+---
+
+<div class="term" id="term">
+  <div class="term-out" id="term-out"></div>
+  <form class="term-form" id="term-form" autocomplete="off">
+    <span class="prompt" aria-hidden="true"></span>
+    <input
+      id="term-input"
+      type="text"
+      spellcheck="false"
+      autocapitalize="off"
+      aria-label="type a command, e.g. ls"
+      placeholder="help"
+    />
+  </form>
+</div>
+
+<script define:vars={{ posts }}>
+  const out = document.getElementById('term-out');
+  const form = document.getElementById('term-form');
+  const input = document.getElementById('term-input');
+  const term = document.getElementById('term');
+  if (!out || !form || !input || !term) throw new Error('terminal not mounted');
+
+  const history = [];
+  let histIdx = -1;
+
+  function line(text = '', cls = '') {
+    const el = document.createElement('div');
+    el.className = 'tline ' + cls;
+    el.textContent = text;
+    out.appendChild(el);
+  }
+
+  function linkLine(label, href) {
+    const el = document.createElement('div');
+    el.className = 'tline';
+    const a = document.createElement('a');
+    a.href = href;
+    a.textContent = label;
+    el.appendChild(a);
+    out.appendChild(el);
+  }
+
+  function scroll() {
+    term.scrollIntoView({ block: 'nearest' });
+  }
+
+  function echo(cmd) {
+    const el = document.createElement('div');
+    el.className = 'tline';
+    const p = document.createElement('span');
+    p.className = 'prompt';
+    el.appendChild(p);
+    el.appendChild(document.createTextNode(cmd));
+    out.appendChild(el);
+  }
+
+  function postById(id) {
+    return posts.find((p) => p.id === id.replace(/\.md$/, ''));
+  }
+
+  function help() {
+    line('ls              list blog posts', 'dim');
+    line('cat <post>      open a post', 'dim');
+    line('open blog       go to /blog', 'dim');
+    line('cat links.txt   contact links', 'dim');
+    line('date            current date', 'dim');
+    line('echo <text>     print text', 'dim');
+    line('clear           clear the screen', 'dim');
+  }
+
+  function ls() {
+    posts.forEach((p) => {
+      line(p.date + '  ' + p.id + '.md');
+    });
+    line('links.txt', 'dim');
+  }
+
+  function links() {
+    linkLine('github:  github.com/you', 'https://github.com/');
+    linkLine('email:   you@example.com', 'mailto:you@example.com');
+  }
+
+  const commands = {
+    help,
+    ls,
+    date: () => line(new Date().toDateString()),
+    echo: (args) => line(args.join(' ')),
+    clear: () => {
+      out.innerHTML = '';
+    },
+    cat: (args) => cat(args),
+    open: (args) => cat(args),
+  };
+
+  function cat(args) {
+    const target = args[0] || '';
+    if (!target) {
+      line('usage: cat <post|links.txt>', 'dim');
+      return;
+    }
+    if (target === 'links.txt' || target === 'links') {
+      links();
+      return;
+    }
+    if (target === 'blog' || target === 'blog/') {
+      setTimeout(() => (window.location.href = '/blog/'), 150);
+      return;
+    }
+    const post = postById(target);
+    if (post) {
+      setTimeout(() => (window.location.href = '/blog/' + post.id + '/'), 150);
+      return;
+    }
+    line('cat: no such file: ' + target, 'faint');
+  }
+
+  function run(raw) {
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+    echo(trimmed);
+    const [cmd, ...args] = trimmed.split(/\s+/);
+    const fn = commands[cmd];
+    if (fn) fn(args);
+    else line('command not found: ' + cmd + ' (try help)', 'faint');
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const value = input.value;
+    if (value.trim()) {
+      history.push(value);
+      histIdx = history.length;
+    }
+    input.value = '';
+    run(value);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histIdx > 0) {
+        histIdx--;
+        input.value = history[histIdx] ?? '';
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histIdx < history.length - 1) {
+        histIdx++;
+        input.value = history[histIdx] ?? '';
+      } else {
+        histIdx = history.length;
+        input.value = '';
+      }
+    }
+  });
+
+  term.addEventListener('click', () => input.focus());
+</script>
+
+<style>
+  .term {
+    margin-top: 0.5rem;
+  }
+
+  .term-out {
+    margin-bottom: 0.25rem;
+  }
+
+  .tline {
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 1.7em;
+  }
+
+  .tline.dim {
+    color: var(--fg-dim);
+  }
+
+  .tline.faint {
+    color: var(--fg-faint);
+  }
+
+  .term-form {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .term-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--fg);
+    font: inherit;
+    caret-color: var(--accent);
+    padding: 0;
+    min-width: 0;
+  }
+
+  .term-form input::placeholder {
+    color: var(--fg-faint);
+    opacity: 1;
+  }
+</style>

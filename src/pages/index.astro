@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Terminal from '../components/Terminal.astro';
+import { getPublishedPosts, formatDate } from '../lib/posts';
+
+const posts = await getPublishedPosts();
+const recent = posts.slice(0, 3);
+const termPosts = posts.map((p) => ({
+  id: p.id,
+  date: formatDate(p.data.pubDate),
+}));
+---
+
+<BaseLayout title="~/">
+  <section class="section">
+    <p><span class="prompt">ls ~/blog</span></p>
+    <ul class="post-list">
+      {
+        recent.map((post) => (
+          <li>
+            <div class="post-row">
+              <span class="date">{formatDate(post.data.pubDate)}</span>
+              <a class="title" href={`/blog/${post.id}/`}>
+                {post.data.title}
+              </a>
+              <span class="desc">{post.data.description}</span>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      <a href="/blog/">→ all posts ({posts.length})</a>
+    </p>
+  </section>
+
+  <section class="section">
+    <p><span class="prompt">cat links.txt</span></p>
+    <ul class="links">
+      <li>
+        <span class="k">github:</span>
+        <a href="https://github.com/">github.com/you</a>
+      </li>
+      <li>
+        <span class="k">email:</span>
+        <a href="mailto:you@example.com">you@example.com</a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <p><span class="prompt">./shell</span></p>
+    <Terminal posts={termPosts} />
+  </section>
+</BaseLayout>

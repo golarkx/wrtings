@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 — command not found">
+  <h1>404</h1>
+  <p><span class="prompt">{Astro.url.pathname}</span></p>
+  <p class="dim">bash: command not found</p>
+  <p><a href="/">→ back to ~</a></p>
+</BaseLayout>

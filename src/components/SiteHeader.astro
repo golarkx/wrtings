@@ -1,0 +1,32 @@
+---
+const nav = [
+  { href: '/', label: '~' },
+  { href: '/blog', label: '~/blog' },
+];
+
+const { pathname } = Astro.url;
+---
+
+<header class="site">
+  <a class="brand" href="/">~/</a>
+  <nav>
+    {
+      nav.map(({ href, label }) => (
+        <a
+          href={href}
+          aria-current={
+            href === '/'
+              ? pathname === '/'
+                ? 'page'
+                : undefined
+              : pathname.startsWith(href)
+                ? 'page'
+                : undefined
+          }
+        >
+          {label}
+        </a>
+      ))
+    }
+  </nav>
+</header>
